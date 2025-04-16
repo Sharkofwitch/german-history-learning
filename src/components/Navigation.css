@@ -1,0 +1,60 @@
+@import '../styles/theme.css';
+
+.main-nav {
+    background: rgba(44, 24, 16, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem 2rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-medium);
+}
+
+.nav-logo a {
+    color: var(--color-parchment);
+    font-family: var(--font-historical);
+    font-size: 1.8rem;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--color-parchment);
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-family: var(--font-historical);
+    font-size: 1.1rem;
+    letter-spacing: 0.03em;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--color-gold);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 80%;
+}
+
+.nav-links a.active {
+    background: var(--color-gold);
+    color: var(--color-ink);
+}

@@ -1,46 +1,93 @@
 import React, { useState } from 'react';
 import { quizzes } from '../data/quizzes';
+import { saveProgress } from '../services/progress';
+import './Quiz.css';
 
-interface QuizProps {
-    questions?: typeof quizzes;
-    onComplete?: (answers: any[]) => void;
-}
-
-const Quiz: React.FC<QuizProps> = ({ questions = quizzes, onComplete }) => {
+const Quiz: React.FC = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [userAnswers, setUserAnswers] = useState<string[]>([]);
+    const [score, setScore] = useState(0);
+    const [showResults, setShowResults] = useState(false);
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+    const [isAnswered, setIsAnswered] = useState(false);
 
-    if (!questions.length) {
-        return <div>No questions available</div>;
-    }
+    const handleAnswer = (answer: string, isCorrect: boolean) => {
+        if (isAnswered) return;
+        
+        setSelectedAnswer(answer);
+        setIsAnswered(true);
 
-    const handleAnswer = (answer: string) => {
-        setUserAnswers([...userAnswers, answer]);
-        const nextQuestion = currentQuestionIndex + 1;
-
-        if (nextQuestion < questions.length) {
-            setCurrentQuestionIndex(nextQuestion);
-        } else if (onComplete) {
-            onComplete(userAnswers);
+        if (isCorrect) {
+            setScore(score + 1);
         }
+
+        setTimeout(() => {
+            if (currentQuestionIndex < quizzes.length - 1) {
+                setCurrentQuestionIndex(prev => prev + 1);
+                setSelectedAnswer(null);
+                setIsAnswered(false);
+            } else {
+                setShowResults(true);
+                saveProgress({
+                    lessonId: `quiz-${currentQuestionIndex + 1}`,
+                    completed: true,
+                    score: ((score + (isCorrect ? 1 : 0)) / quizzes.length) * 100
+                });
+            }
+        }, 1500);
     };
 
-    const currentQuestion = questions[currentQuestionIndex];
+    const restartQuiz = () => {
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setShowResults(false);
+        setSelectedAnswer(null);
+        setIsAnswered(false);
+    };
+
+    if (showResults) {
+        return (
+            <div className="quiz-container">
+                <h2>Quiz Complete!</h2>
+                <div className="results">
+                    <p>Your Score: {score} out of {quizzes.length}</p>
+                    <p>Percentage: {((score / quizzes.length) * 100).toFixed(1)}%</p>
+                </div>
+                <button className="restart-button" onClick={restartQuiz}>
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
+    const currentQuestion = quizzes[currentQuestionIndex];
 
     return (
         <div className="quiz-container">
-            <h2>{currentQuestion.question}</h2>
-            <ul className="quiz-options">
+            <div className="quiz-header">
+                <h2>Question {currentQuestionIndex + 1} of {quizzes.length}</h2>
+                <p className="score">Current Score: {score}</p>
+            </div>
+            <div className="question">
+                <h3>{currentQuestion.question}</h3>
+            </div>
+            <div className="options">
                 {currentQuestion.options.map((option, index) => (
-                    <li 
-                        key={index} 
-                        onClick={() => handleAnswer(option.answer)}
-                        className="quiz-option"
+                    <button
+                        key={index}
+                        onClick={() => handleAnswer(option.answer, option.isCorrect)}
+                        className={`option-button ${
+                            selectedAnswer === option.answer 
+                                ? option.isCorrect 
+                                    ? 'correct' 
+                                    : 'incorrect'
+                                : ''
+                        } ${isAnswered ? 'disabled' : ''}`}
+                        disabled={isAnswered}
                     >
                         {option.answer}
-                    </li>
+                    </button>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 };
