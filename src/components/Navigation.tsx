@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 import './Navigation.css';
 
 const Navigation: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +17,11 @@ const Navigation: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <motion.nav 
@@ -53,19 +61,37 @@ const Navigation: React.FC = () => {
         </Link>
         
         <div className="nav-links">
-          {[
-            { path: '/lessons', label: 'Lessons' },
-            { path: '/quizzes', label: 'Quizzes' },
-            { path: '/profile', label: 'Profile' },
-          ].map(({ path, label }) => (
-            <Link
-              key={path}
-              to={path}
-              className={`nav-link ${location.pathname === path ? 'active' : ''}`}
-            >
-              {label}
-            </Link>
-          ))}
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/lessons"
+                className={`nav-link ${location.pathname === '/lessons' ? 'active' : ''}`}
+              >
+                Lessons
+              </Link>
+              <Link
+                to="/quizzes"
+                className={`nav-link ${location.pathname === '/quizzes' ? 'active' : ''}`}
+              >
+                Quizzes
+              </Link>
+              <Link
+                to="/profile"
+                className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}
+              >
+                Profile
+              </Link>
+              <button onClick={handleLogout} className="nav-link logout-button">
+                Logout
+              </button>
+            </>
+          ) : (
+            location.pathname !== '/login' && (
+              <Link to="/login" className="nav-link">
+                Login
+              </Link>
+            )
+          )}
         </div>
       </div>
     </motion.nav>

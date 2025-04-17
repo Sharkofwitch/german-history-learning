@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Quiz as QuizType, quizzes } from '../data/content';
+import { DatabaseService } from '../services/databaseService';
 import './Quiz.css';
+import { useAuth } from '../contexts/AuthContext';
+
+const LoadingSpinner: React.FC = () => (
+  <div className="loading-spinner">
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      className="spinner"
+    />
+    Loading...
+  </div>
+);
 
 const Quiz: React.FC = () => {
   const [currentQuiz, setCurrentQuiz] = useState<QuizType | null>(null);
@@ -9,6 +22,8 @@ const Quiz: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const handleAnswerSelect = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
@@ -28,9 +43,28 @@ const Quiz: React.FC = () => {
       setShowExplanation(false);
     } else {
       // Quiz completed
+      handleQuizComplete(score);
       setCurrentQuiz(null);
       setCurrentQuestion(0);
       setScore(0);
+    }
+  };
+
+  const handleQuizComplete = async (score: number) => {
+    if (user && currentQuiz) {
+      try {
+        await DatabaseService.saveQuizResult(user.uid, currentQuiz.id, score);
+        // Update user profile stats
+        const userStats = await DatabaseService.getUserProfile(user.uid);
+        if (userStats) {
+          await DatabaseService.updateUserProfile(user.uid, {
+            quizzesTaken: userStats.quizzesTaken + 1,
+            perfectQuizzes: score === 100 ? userStats.perfectQuizzes + 1 : userStats.perfectQuizzes
+          });
+        }
+      } catch (error) {
+        console.error('Error saving quiz result:', error);
+      }
     }
   };
 

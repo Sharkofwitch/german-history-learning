@@ -1,9 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 import './Welcome.css';
 
 const Welcome: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate('/lessons'); // Redirect to lessons if already logged in
+    } else {
+      navigate('/login'); // Redirect to login if not authenticated
+    }
+  };
+
   const parallaxVariants = {
     initial: { y: 20, opacity: 0 },
     animate: { y: 0, opacity: 1 },
@@ -41,12 +53,14 @@ const Welcome: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <Link to="/lessons" className="cta-button primary">
-              Begin Your Journey
-            </Link>
-            <Link to="/quizzes" className="cta-button secondary">
-              Test Your Knowledge
-            </Link>
+            <motion.button
+              className="cta-button primary"
+              onClick={handleGetStarted}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isAuthenticated ? 'Continue Learning' : 'Get Started'}
+            </motion.button>
           </motion.div>
         </motion.div>
       </div>

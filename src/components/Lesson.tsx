@@ -1,224 +1,138 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { lessons } from '../data/lessons';
+import { Lesson as LessonType } from '../types/lesson';
+import { DatabaseService } from '../services/databaseService';
 import './Lesson.css';
+import { useAuth } from '../contexts/AuthContext';
 
-interface LessonPage {
-  id: number;
-  title: string;
-  content: string;
-  image?: string;
-  type: 'text' | 'image' | 'interactive';
-}
-
-interface LessonProps {
-  lesson: {
-    title: string;
-    subtitle: string;
-    era: string;
-    difficulty: string;
-    estimatedTime: number;
-    pages: LessonPage[];
-  };
-  progress: number;
-  onComplete: () => void;
-}
-
-const Lesson: React.FC<LessonProps> = ({ lesson, progress, onComplete }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+const Lesson: React.FC = () => {
+  const { lessonId } = useParams();
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(0);
+  const { user } = useAuth();
+  const lesson = lessons.find(l => l.id.toString() === lessonId) as LessonType;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setIsVisible(true);
-  }, []);
+    if (lesson?.pages && currentPage >= lesson.pages.length) {
+      setCurrentPage(0);
+    }
+  }, [lessonId, lesson, currentPage]);
 
-  const handleNextPage = () => {
-    if (currentPageIndex < lesson.pages.length - 1) {
-      setCurrentPageIndex(prev => prev + 1);
-    } else {
-      onComplete();
+  if (!lesson) {
+    return <div>Lesson not found</div>;
+  }
+
+  // Initialize pages if they don't exist
+  const pages = lesson.pages || [{
+    type: 'text',
+    content: lesson.content
+  }];
+
+  const handleComplete = async () => {
+    if (user) {
+      try {
+        await DatabaseService.updateProgress(user.uid, lessonId!, true);
+        navigate(`/lessons/${lessonId}/complete`);
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
     }
   };
 
-  const handlePreviousPage = () => {
-    if (currentPageIndex > 0) {
-      setCurrentPageIndex(prev => prev - 1);
+  const handleNext = () => {
+    if (currentPage < pages.length - 1) {
+      setCurrentPage(prev => prev + 1);
     } else {
-      window.history.back();
+      handleComplete();
     }
   };
+
+  const handlePrevious = () => {
+    if (currentPage > 0) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const LoadingSpinner: React.FC = () => (
+    <div className="loading-spinner">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        className="spinner"
+      />
+      Loading...
+    </div>
+  );
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          className="lesson-container"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+    <motion.div 
+      className="lesson-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="lesson-header">
+        <motion.h1 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
         >
-          <motion.div className="lesson-header-fixed">
-            <div className="lesson-title-area">
-              <motion.h1 
-                className="lesson-main-title"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {lesson.title}
-              </motion.h1>
-              <motion.p
-                className="lesson-subtitle"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                {lesson.subtitle}
-              </motion.p>
-            </div>
+          {lesson.title}
+        </motion.h1>
+        <motion.div 
+          className="lesson-progress"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: (currentPage + 1) / pages.length }}
+        />
+      </div>
 
-            <div className="lesson-meta">
-              <span className="era-badge">{lesson.era}</span>
-              <span className="difficulty-badge">{lesson.difficulty}</span>
-              <span className="time-badge">{lesson.estimatedTime} min</span>
-            </div>
-          </motion.div>
-
-          <motion.div className="lesson-progress-bar">
-            <div className="progress-steps">
-              {lesson.pages.map((page, index) => (
-                <motion.div
-                  key={page.id}
-                  className={`progress-step ${index <= currentPageIndex ? 'active' : ''}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="step-number">{index + 1}</div>
-                  <div className="step-title">{page.title}</div>
-                </motion.div>
-              ))}
-            </div>
-            <motion.div 
-              className="progress-line"
-              initial={{ width: '0%' }}
-              animate={{ 
-                width: `${(currentPageIndex / (lesson.pages.length - 1)) * 100}%` 
-              }}
-              transition={{ duration: 0.5 }}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={currentPage}
+          className="lesson-content glass-morphism"
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+        >
+          {pages[currentPage].type === 'image' && pages[currentPage].image && (
+            <motion.img
+              src={pages[currentPage].image}
+              alt="Lesson illustration"
+              className="lesson-image"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
             />
-          </motion.div>
+          )}
 
-          <div className="lesson-content-wrapper">
-            <AnimatePresence presenceAffectsLayout>
-              <motion.div 
-                key={currentPageIndex}
-                className="lesson-card glass-morphism"
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ type: "spring", stiffness: 100 }}
-              >
-                <div className="historical-pattern-overlay" />
-                
-                <header className="lesson-header">
-                  <motion.h1 
-                    className="lesson-title"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    {lesson.pages[currentPageIndex].title}
-                  </motion.h1>
-                </header>
+          <div className="lesson-text">
+            {pages[currentPage].content}
+          </div>
 
-                <motion.div 
-                  className="lesson-content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {lesson.pages[currentPageIndex].type === 'image' && (
-                    <motion.img
-                      src={lesson.pages[currentPageIndex].image}
-                      alt="Historical illustration"
-                      className="lesson-image"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: 1 }}
-                      whileHover={{ scale: 1.05 }}
-                    />
-                  )}
-                  
-                  <motion.div
-                    className="content-wrapper"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    {lesson.pages[currentPageIndex].content}
-                  </motion.div>
-
-                  {lesson.pages[currentPageIndex].type === 'interactive' && (
-                    <motion.div 
-                      className="interactive-elements"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      {/* Add interactive elements here */}
-                      <div className="timeline-widget">
-                        {/* Timeline content */}
-                      </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-
-                <motion.div 
-                  className="lesson-navigation glass-morphism"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <motion.button 
-                    className="nav-button secondary"
-                    onClick={handlePreviousPage}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Previous
-                  </motion.button>
-                  
-                  <div className="page-indicator">
-                    {currentPageIndex + 1} / {lesson.pages.length}
-                  </div>
-
-                  <motion.button 
-                    className="nav-button primary"
-                    onClick={handleNextPage}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {currentPageIndex === lesson.pages.length - 1 ? 'Complete' : 'Continue'}
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
-
-            <motion.div className="lesson-sidebar">
-              <div className="page-overview">
-                {lesson.pages.map((page, index) => (
-                  <motion.div
-                    key={page.id}
-                    className={`page-item ${index === currentPageIndex ? 'active' : ''}`}
-                    onClick={() => setCurrentPageIndex(index)}
-                    whileHover={{ x: 5 }}
-                  >
-                    <span className="page-number">{index + 1}</span>
-                    <span className="page-title">{page.title}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+          <div className="lesson-navigation">
+            <motion.button
+              onClick={handlePrevious}
+              disabled={currentPage === 0}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="nav-button secondary"
+            >
+              Previous
+            </motion.button>
+            <span className="page-indicator">{currentPage + 1} / {pages.length}</span>
+            <motion.button
+              onClick={handleNext}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="nav-button primary"
+            >
+              {currentPage === pages.length - 1 ? 'Complete' : 'Next'}
+            </motion.button>
           </div>
         </motion.div>
-      )}
-    </AnimatePresence>
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

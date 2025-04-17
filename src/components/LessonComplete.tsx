@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { lessons } from '../data/lessons';
+import { useAuth } from '../contexts/AuthContext';
 import './LessonComplete.css';
 
-interface LessonCompleteProps {
-  title: string;
-  score?: number;
-  nextLessonId?: string;
-}
+const LessonComplete: React.FC = () => {
+  const { lessonId } = useParams();
+  const { user } = useAuth();
+  const lesson = lessons.find(l => l.id.toString() === lessonId);
+  
+  if (!lesson) {
+    return <div>Lesson not found</div>;
+  }
 
-const LessonComplete: React.FC<LessonCompleteProps> = ({ 
-  title, 
-  score = 100,
-  nextLessonId 
-}) => {
+  const nextLesson = lessons.find(l => l.id > lesson.id);
+
   return (
     <motion.div 
       className="lesson-complete-container"
@@ -61,35 +63,8 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
         >
-          You've completed "{title}"
+          You've completed "{lesson.title}"
         </motion.p>
-
-        <motion.div 
-          className="completion-score"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 1.1 }}
-        >
-          <div className="score-circle">
-            <motion.div 
-              className="score-number"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.3 }}
-            >
-              {score}%
-            </motion.div>
-            <motion.svg 
-              className="score-ring"
-              viewBox="0 0 100 100"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: score / 100 }}
-              transition={{ delay: 1.3, duration: 1.5, ease: "easeOut" }}
-            >
-              <circle cx="50" cy="50" r="45" />
-            </motion.svg>
-          </div>
-        </motion.div>
 
         <motion.div 
           className="completion-actions"
@@ -97,8 +72,8 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          {nextLessonId ? (
-            <Link to={`/lessons/${nextLessonId}`} className="action-button primary">
+          {nextLesson ? (
+            <Link to={`/lessons/${nextLesson.id}`} className="action-button primary">
               Next Lesson
             </Link>
           ) : (
