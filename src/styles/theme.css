@@ -1,34 +1,26 @@
 :root {
-    /* Historical Color Palette */
+    /* Modern Apple-inspired colors */
+    --color-primary: #8B4513;
+    --color-secondary: #D2691E;
+    --color-background: #F5F5F7;
+    --color-card: rgba(255, 255, 255, 0.8);
+    --color-text: #1D1D1F;
+    --color-text-secondary: #86868B;
     --color-parchment: #F5E6D3;
-    --color-aged-paper: #E8DCC4;
     --color-ink: #2C1810;
-    --color-gold: #D4AF37;
-    --color-burgundy: #800020;
-    --color-prussian: #003153;
-    
-    /* UI Colors */
-    --color-bg-primary: var(--color-parchment);
-    --color-bg-secondary: var(--color-aged-paper);
-    --color-text-primary: var(--color-ink);
-    --color-text-secondary: #594A42;
-    --color-accent: var(--color-burgundy);
-    
-    /* Era-specific Colors */
-    --color-medieval: var(--color-burgundy);
-    --color-renaissance: var(--color-gold);
-    --color-enlightenment: var(--color-prussian);
-    
+
+    /* Shadows and effects */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
+    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.05);
+    --blur-background: blur(20px);
+
     /* Typography */
-    --font-historical: 'Cinzel', serif;
-    --font-body: 'SF Pro Text', -apple-system, BlinkMacSystemFont;
-    --font-decorative: 'Cinzel Decorative', serif;
-    
-    /* Effects */
-    --shadow-subtle: 0 2px 10px rgba(44, 24, 16, 0.1);
-    --shadow-medium: 0 4px 20px rgba(44, 24, 16, 0.15);
-    --shadow-strong: 0 8px 30px rgba(44, 24, 16, 0.2);
-    
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-historical: 'Playfair Display', serif;
+    --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+
+    /* Animations */
+    --transition-fast: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }

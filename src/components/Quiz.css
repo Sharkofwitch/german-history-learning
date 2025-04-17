@@ -100,3 +100,240 @@
     border-radius: 5px;
     cursor: pointer;
 }
+
+.quiz-selection {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--color-background);
+  position: relative;
+  overflow: hidden;
+  padding-top: calc(var(--navbar-height) + 2rem);
+}
+
+.historical-pattern-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('./assets/historical-pattern.svg');
+  opacity: 0.05;
+  pointer-events: none;
+  animation: patternFloat 30s linear infinite;
+}
+
+.quiz-title {
+  font-family: var(--font-historical);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--color-ink);
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.quiz-card {
+  padding: 2rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.quiz-card h2 {
+  font-family: var(--font-historical);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  margin-bottom: 1rem;
+}
+
+.quiz-card p {
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.difficulty {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.difficulty.beginner {
+  background: #E3F5E1;
+  color: #2F7A26;
+}
+
+.difficulty.intermediate {
+  background: #FFF4E5;
+  color: #B76E00;
+}
+
+.difficulty.advanced {
+  background: #FFE5E5;
+  color: #C41E3A;
+}
+
+.quiz-gameplay {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--color-background);
+  padding-top: calc(var(--navbar-height) + 2rem);
+}
+
+.quiz-header {
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.quiz-header h2 {
+  font-family: var(--font-historical);
+  font-size: 2rem;
+  color: var(--color-ink);
+  margin-bottom: 1.5rem;
+}
+
+.quiz-progress {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.progress-text {
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: 2px;
+}
+
+.question-card {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.question-text {
+  font-family: var(--font-historical);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  margin-bottom: 2rem;
+  line-height: 1.4;
+}
+
+.answers-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.answer-option {
+  padding: 1.2rem;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background: white;
+  font-size: 1.1rem;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.answer-option:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: rgba(139, 69, 19, 0.05);
+}
+
+.answer-option.correct {
+  background: #E3F5E1;
+  border-color: #2F7A26;
+  color: #2F7A26;
+}
+
+.answer-option.incorrect {
+  background: #FFE5E5;
+  border-color: #C41E3A;
+  color: #C41E3A;
+}
+
+.explanation {
+  padding: 1.5rem;
+  background: rgba(139, 69, 19, 0.05);
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+.explanation p {
+  color: var(--color-ink);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.next-button {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--color-primary);
+  color: var(--color-parchment);
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.next-button:hover {
+  background: var(--color-secondary);
+}
+
+@keyframes patternFloat {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 100%; }
+}
+
+@media (max-width: 768px) {
+  .quiz-selection {
+    padding: 1rem;
+  }
+
+  .quiz-gameplay {
+    padding: 1rem;
+  }
+
+  .question-card {
+    padding: 1.5rem;
+  }
+
+  .answer-option {
+    padding: 1rem;
+  }
+}
